@@ -6,6 +6,8 @@
 
 
 //backup serverside code
+require('dotenv').config();
+
 const app = require("express")();
 const http = require("http").createServer(app);
 const bodyParser = require('body-parser');
@@ -18,23 +20,22 @@ const moment = require('moment');
 const mongoose = require("mongoose");
 const { userInfo } = require("os");
 const { get } = require("http");
+const PORT= process.env.PORT || 4200
 app.use(cors({
   origin: '*',
 }));
 // const uri = 'mongodb+srv://StampaChat:goUGOq2fUPoJUvpD@cluster0.n98lqzj.mongodb.net/';
 // mongodb+srv://chatbot:<password>@cluster0.es25mu0.mongodb.net/?retryWrites=true&w=majority
-const uri = 'mongodb+srv://chatbot:bwynxwrUmyUkEFvQ@cluster0.es25mu0.mongodb.net/?retryWrites=true&w=majority';
 
-async function connect() {
+const connectDB = async () => {
   try {
-    await mongoose.connect(uri);
-    console.log("Connected to MongoDB");
+    const conn = await mongoose.connect(process.env.MONGO_URI );
+    console.log("Connected")
   } catch (error) {
-    console.error("error", error);
+    console.log(error);
+    process.exit(1);
   }
 }
-
-connect();
 
 const io = require("socket.io")(http, {
   cors: {
@@ -436,9 +437,10 @@ app.post("/users", async (req, res) => {
 
 
 
-http.listen(4200, () => {
-  console.log("Listening on port 4200");
-});
-
+connectDB().then(() => {
+  app.listen(PORT, () => {
+      console.log("listening for requests");
+  })
+})
 
 
